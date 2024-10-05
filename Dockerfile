@@ -32,5 +32,5 @@ WORKDIR /usr/src/app/build
 RUN cmake ..
 RUN make
 
-# CMD ["/usr/sbin/sshd","-D"]
-CMD ["./main"]
+CMD ["/usr/sbin/sshd","-D"]
+# CMD ["./main"]
