@@ -96,3 +96,86 @@ Matrix algebra::multiply(const Matrix& matrix1, const Matrix& matrix2){
     return new_matrix;
 }
 
+Matrix algebra::sum(const Matrix& matrix, double c){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    Matrix new_matrix = zeros(rows, cols);
+    for(size_t row = 0; row < rows; ++row){
+        for(size_t col = 0; col < cols; ++col){
+            new_matrix[row][col] = matrix[row][col] + c;
+        }
+    }
+    return new_matrix;
+}
+
+Matrix algebra::sum(const Matrix& matrix1, const Matrix& matrix2){
+    size_t rows_1 = 0, cols_1 = 0;
+    size_t rows_2 = 0, cols_2 = 0;
+    getRowsCols(matrix1, rows_1, cols_1);
+    getRowsCols(matrix2, rows_2, cols_2);
+
+    if(rows_1 != rows_2 || cols_1 != cols_2){
+        throw std::logic_error("The shapes of the two matrices do not match.");
+    }
+
+    Matrix new_matrix = zeros(rows_1, cols_1);
+
+    for(size_t row = 0; row < rows_1; ++row){
+        for(size_t col = 0; col < cols_1; ++col){
+            new_matrix[row][col] = matrix1[row][col] + matrix2[row][col];
+        }
+    }
+    
+    return new_matrix;
+}
+
+Matrix algebra::transpose(const Matrix& matrix){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    Matrix new_matrix = zeros(cols, rows);
+
+    for(size_t row = 0; row < rows; ++row){
+        for(size_t col = 0; col < cols; ++col){
+            new_matrix[col][row] = matrix[row][col];
+        }
+    }
+    return new_matrix;
+}
+
+Matrix algebra::minor(const Matrix& matrix, size_t n, size_t m){
+    size_t rows = 0,  cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if(n >= rows || m >= cols){
+        throw std::logic_error("The subscript range is exceeded");
+    }
+    if(rows == 1 || cols == 1){
+        return {{}};
+    }
+    Matrix new_matrix;
+    for(int row = 0; row < rows; ++row){
+        if(row == n) continue;
+        std::vector<double> row_vector;
+        for(int col = 0; col < cols; ++col){
+            if(col != m) row_vector.push_back(matrix[row][col]);
+        }
+        new_matrix.push_back(row_vector);
+    }
+    return new_matrix;
+}
+
+double algebra::determinant(const Matrix& matrix){
+    
+}
+
+// Matrix inverse(const Matrix& matrix);
+
+// Matrix concatenate(const Matrix& matrix1, const Matrix& matrix2, int axis=0);
+
+// Matrix ero_swap(const Matrix& matrix, size_t r1, size_t r2);
+
+// Matrix ero_multiply(const Matrix& matrix, size_t r, double c);
+
+// Matrix ero_sum(const Matrix& matrix, size_t r1, double c, size_t r2);
+
+// Matrix upper_triangular(const Matrix& matrix);
+
