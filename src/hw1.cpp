@@ -155,7 +155,7 @@ Matrix algebra::minor(const Matrix& matrix, size_t n, size_t m){
     for(int row = 0; row < rows; ++row){
         if(row == n) continue;
         std::vector<double> row_vector;
-        for(int col = 0; col < cols; ++col){
+        for(size_t col = 0; col < cols; ++col){
             if(col != m) row_vector.push_back(matrix[row][col]);
         }
         new_matrix.push_back(row_vector);
@@ -164,18 +164,131 @@ Matrix algebra::minor(const Matrix& matrix, size_t n, size_t m){
 }
 
 double algebra::determinant(const Matrix& matrix){
-    
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if (rows != cols){
+        throw std::logic_error("The number of rows is not equal to the number of columns.");
+    }
+    if(rows == 1){
+        return matrix[0][0];
+    }
+    int flag = 1;
+    double res = 0.;
+    for(size_t i = 0; i < cols; ++i){
+        res += flag * matrix[0][i] * determinant(minor(matrix, 0, i));
+        flag *= -1;
+    }
+    return res;
 }
 
-// Matrix inverse(const Matrix& matrix);
+Matrix algebra::inverse(const Matrix& matrix){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if(rows != cols){
+        throw std::logic_error("rows is not equal to cols so no inverse.");
+    }
+    Matrix adjugate_matrix = adjugate(matrix);
+    double determinant_val = determinant(matrix);
+    return multiply(adjugate_matrix, 1.0/determinant_val);
+}
 
-// Matrix concatenate(const Matrix& matrix1, const Matrix& matrix2, int axis=0);
+Matrix adjugate(const Matrix& matrix){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    Matrix adjugate_matrix = algebra::zeros(rows, cols);
+    for(size_t row = 0; row < rows; row++){
+        for(size_t col = 0; col < cols; col++){
+            adjugate_matrix[col][row] = algebra::determinant(algebra::minor(matrix, row, col));
+        }
+    }
+    return adjugate_matrix;
+}
 
-// Matrix ero_swap(const Matrix& matrix, size_t r1, size_t r2);
+Matrix algebra::concatenate(const Matrix& matrix1, const Matrix& matrix2, int axis=0){
+    size_t rows_1 = 0, cols_1 = 0;
+    size_t rows_2 = 0, cols_2 = 0;
+    getRowsCols(matrix1, rows_1, cols_1);
+    getRowsCols(matrix2, rows_2, cols_2);
 
-// Matrix ero_multiply(const Matrix& matrix, size_t r, double c);
+    Matrix concatenate_matrix = matrix1;
+    if(axis == 0){
+        if(cols_1 != cols_2){
+            throw std::logic_error("matix1's col num is not equal to matrix2's col num");
+        }
+        // for(size_t row = 0; row < rows_2; ++row){
+        //     concatenate_matrix.push_back(matrix2[row]);
+        // }
+        concatenate_matrix.insert(concatenate_matrix.end(), matrix2.begin(), matrix2.end());
+    }
+    else if(axis == 1){
+        if(rows_1 != rows_2){
+            throw std::logic_error("matix1's row num is not equal to matrix2's row num");
+        }
+        // for(size_t row = 0; row < rows_1; row++){
+        //     for(size_t col = 0; col < cols_2; col++){
+        //         concatenate_matrix[row].push_back(matrix2[row][col]);
+        //     }
+        // }
+        for(size_t row = 0; row < rows_1; row++){
+            concatenate_matrix[row].insert(concatenate_matrix[row].end(), matrix2[row].begin(), matrix2[row].end());
+        }
+    }
+    return concatenate_matrix;
+}
 
-// Matrix ero_sum(const Matrix& matrix, size_t r1, double c, size_t r2);
+Matrix algebra::ero_swap(const Matrix& matrix, size_t r1, size_t r2){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if(rows <= r1 || rows <= r2){
+        throw std::logic_error("row index out of range.");
+    }
+    Matrix swap_matrix = matrix;
+    std::vector<double> row_temp = matrix[r1];
+    swap_matrix[r1] = matrix[r2];
+    swap_matrix[r2] = row_temp;
+    return swap_matrix;
+}
 
-// Matrix upper_triangular(const Matrix& matrix);
+Matrix algebra::ero_multiply(const Matrix& matrix, size_t r, double c){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if(rows <= r){
+        throw std::logic_error("row index out of range.");
+    }
+    Matrix res = matrix;
+    for(double& val : res[r]){
+        val *= c;
+    }
+    return res;
+}
+
+Matrix algebra::ero_sum(const Matrix& matrix, size_t r1, double c, size_t r2){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if(rows <= r1 || rows <= r2){
+        throw std::logic_error("row index out of range.");
+    }
+    Matrix res = matrix;
+    for(size_t col = 0; col < cols; col++){
+        res[r2][col] += res[r1][col]*c;
+    }
+    return res;
+}
+
+Matrix algebra::upper_triangular(const Matrix& matrix){
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if(rows != cols){
+        throw std::logic_error("rows is not equal to cols.");
+    }
+    if(rows == 1){
+        return matrix;
+    }
+    Matrix res = matrix;
+    for(size_t row = 1; row < rows; row++){
+        for(size_t i = row; i < rows; i++){
+           
+        }
+    }
+}
 
