@@ -1,1 +1,4 @@
-/build/
+./Makefile
+./CMakeFiles
+./.vscode
+./main

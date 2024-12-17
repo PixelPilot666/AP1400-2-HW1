@@ -75,6 +75,7 @@ Matrix algebra::multiply(const Matrix& matrix, double c){
 }
 
 Matrix algebra::multiply(const Matrix& matrix1, const Matrix& matrix2){
+    if(matrix1.empty() && matrix2.empty()) return Matrix();
     size_t rows_1 = 0, cols_1 = 0;
     size_t rows_2 = 0, cols_2 = 0;
     getRowsCols(matrix1, rows_1, cols_1);
@@ -97,6 +98,7 @@ Matrix algebra::multiply(const Matrix& matrix1, const Matrix& matrix2){
 }
 
 Matrix algebra::sum(const Matrix& matrix, double c){
+    if(matrix.empty()) return Matrix();
     size_t rows = 0, cols = 0;
     getRowsCols(matrix, rows, cols);
     Matrix new_matrix = zeros(rows, cols);
@@ -109,6 +111,7 @@ Matrix algebra::sum(const Matrix& matrix, double c){
 }
 
 Matrix algebra::sum(const Matrix& matrix1, const Matrix& matrix2){
+    if(matrix1.empty() && matrix2.empty()) return Matrix();
     size_t rows_1 = 0, cols_1 = 0;
     size_t rows_2 = 0, cols_2 = 0;
     getRowsCols(matrix1, rows_1, cols_1);
@@ -130,6 +133,7 @@ Matrix algebra::sum(const Matrix& matrix1, const Matrix& matrix2){
 }
 
 Matrix algebra::transpose(const Matrix& matrix){
+    if(matrix.empty()) return Matrix();
     size_t rows = 0, cols = 0;
     getRowsCols(matrix, rows, cols);
     Matrix new_matrix = zeros(cols, rows);
@@ -164,6 +168,7 @@ Matrix algebra::minor(const Matrix& matrix, size_t n, size_t m){
 }
 
 double algebra::determinant(const Matrix& matrix){
+    if(matrix.empty()) return 1;
     size_t rows = 0, cols = 0;
     getRowsCols(matrix, rows, cols);
     if (rows != cols){
@@ -181,17 +186,6 @@ double algebra::determinant(const Matrix& matrix){
     return res;
 }
 
-Matrix algebra::inverse(const Matrix& matrix){
-    size_t rows = 0, cols = 0;
-    getRowsCols(matrix, rows, cols);
-    if(rows != cols){
-        throw std::logic_error("rows is not equal to cols so no inverse.");
-    }
-    Matrix adjugate_matrix = adjugate(matrix);
-    double determinant_val = determinant(matrix);
-    return multiply(adjugate_matrix, 1.0/determinant_val);
-}
-
 Matrix adjugate(const Matrix& matrix){
     size_t rows = 0, cols = 0;
     getRowsCols(matrix, rows, cols);
@@ -203,8 +197,22 @@ Matrix adjugate(const Matrix& matrix){
     }
     return adjugate_matrix;
 }
+Matrix algebra::inverse(const Matrix& matrix){
+    if(matrix.empty()) return Matrix();
+    size_t rows = 0, cols = 0;
+    getRowsCols(matrix, rows, cols);
+    if(rows != cols){
+        throw std::logic_error("rows is not equal to cols so no inverse.");
+    }
+    double determinant_val = determinant(matrix);
+    if(determinant_val == 0.0){
+        throw std::logic_error("singular matrices have no inverse.");
+    }
+    Matrix adjugate_matrix = adjugate(matrix);
+    return multiply(adjugate_matrix, 1.0/determinant_val);
+}
 
-Matrix algebra::concatenate(const Matrix& matrix1, const Matrix& matrix2, int axis=0){
+Matrix algebra::concatenate(const Matrix& matrix1, const Matrix& matrix2, int axis){
     size_t rows_1 = 0, cols_1 = 0;
     size_t rows_2 = 0, cols_2 = 0;
     getRowsCols(matrix1, rows_1, cols_1);
@@ -276,19 +284,28 @@ Matrix algebra::ero_sum(const Matrix& matrix, size_t r1, double c, size_t r2){
 }
 
 Matrix algebra::upper_triangular(const Matrix& matrix){
+    if(matrix.empty()) return Matrix();
     size_t rows = 0, cols = 0;
     getRowsCols(matrix, rows, cols);
     if(rows != cols){
         throw std::logic_error("rows is not equal to cols.");
     }
-    if(rows == 1){
+    if(cols == 1){
         return matrix;
     }
     Matrix res = matrix;
-    for(size_t row = 1; row < rows; row++){
-        for(size_t i = row; i < rows; i++){
-           
+
+    for(size_t row = 0; row < rows; row++){
+        for(size_t col = row+1; col < cols; col++){
+            while(res[row][row] == 0){
+                size_t k = 1;
+                res =  ero_swap(res, row, row+k);
+                k++;
+            }
+            double c = -res[col][row]/res[row][row];
+            res = ero_sum(res, row, c, col);
         }
     }
+    return res;
 }
 
